@@ -126,10 +126,8 @@ class Cells:
     def switch_players(self):
         if self.colorcombat.game_type == 1:
             self.colorcombat.current_player = 2 if self.colorcombat.current_player == 1 else 1
-            self.colorcombat.player.config(text=f"Current Player: Player {self.colorcombat.current_player}")
         else:
             self.colorcombat.current_player = 2
-            self.colorcombat.player.config(text="Current Player: Player 2")
             self.colorcombat.root.after(500, self.colorcombat.enemy_move)
 
     def get_cell_type(self, row, column):

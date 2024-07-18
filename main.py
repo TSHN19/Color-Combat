@@ -12,7 +12,9 @@ class ColorCombat:
         self.root.resizable(False, False)
         self.width = 930
         self.height = 650
+        self.initialize_game()
 
+    def initialize_game(self):
         # Set background image
         self.canvas = Canvas(self.root, width = self.width, height = self.height)
         self.canvas.pack(fill="both", expand=True)
@@ -183,15 +185,6 @@ class ColorCombat:
         self.cells = []
         self.player2_has_moved = False
 
-        self.player = Label(
-            self.canvas, 
-            text="Current Player: Player 1", 
-            fg="white", 
-            bg="#393E46", 
-            font=("Inter", 25, "bold")
-        )
-        self.player.place(x=250, y=500)
-
         self.winner = Label(
             self.canvas, 
             text="", 
@@ -203,7 +196,7 @@ class ColorCombat:
 
         # Frame for the grid of buttons
         self.grid_frame = Frame(self.canvas, bg='#0C0C0D')
-        self.canvas.create_window(self.width//2, self.height//2, window=self.grid_frame, anchor="center")
+        self.window_id = self.canvas.create_window(self.width//2, self.height//2, window=self.grid_frame, anchor="center")
         
         for i in range(self.rows):
             row_cells = []
@@ -222,28 +215,58 @@ class ColorCombat:
                 self.cells[i][j].on_click()
 
         self.current_player = 1
-        self.player.config(text="Current Player: Player 1")
 
     def check_game_over(self):
-        player1_cells = player2_cells = 0
+        self.player1_cells = self.player2_cells = 0
 
         for row in self.cells:
             for cell in row:
                 if cell.clicked_by == 1:
-                    player1_cells += 1
+                    self.player1_cells += 1
                 elif cell.clicked_by == 2:
-                    player2_cells += 1
+                    self.player2_cells += 1
                     self.player2_has_moved = True
 
         if self.player2_has_moved:
-            if player1_cells == 0:
-                self.winner.config(text="Player 2 Wins!")
-                return True
-            elif player2_cells == 0:
-                self.winner.config(text="Player 1 Wins!")
+            if self.player1_cells == 0:
+                if self.game_type == 1:
+                    self.gameover_path = "P2 Won.png"
+                    self.gameover()
+                    return True
+                elif self.game_type == 2:
+                    self.gameover_path = "AI Won.png"
+                    self.gameover()
+                    return True
+            elif self.player2_cells == 0:
+                self.gameover_path = "P1 Won.png"
+                self.gameover()
                 return True
     
         return False
+
+    def gameover(self):
+        self.canvas.delete(self.window_id)
+        self.bg_image = Image.open(self.gameover_path)
+        self.bg_image = self.bg_image.resize((self.width, self.height), Image.ANTIALIAS)
+        self.bg_image = ImageTk.PhotoImage(self.bg_image)
+        self.canvas.create_image(0, 0, anchor="nw", image=self.bg_image)
+        for row_cells in self.cells:
+            for cell in row_cells:
+                cell.button.grid_forget()
+
+        # Exit Button
+        exit_image_path = 'Exit.png'
+        self.exit_image = self.resize_image(exit_image_path, 350)
+        self.exit_button = tk.Button (
+            self.root, 
+            image = self.exit_image, 
+            borderwidth = 0, 
+            highlightthickness=0, 
+            highlightbackground="black", 
+            activebackground="#ffffff",
+            command=self.root.quit
+        )
+        self.exit_button.place(x = self.width//2, y = 450, anchor = "center")
 
 # Show the Application Window
 app = ColorCombat()
